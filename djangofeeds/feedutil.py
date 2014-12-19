@@ -1,3 +1,4 @@
+import hashlib
 import time
 import urllib
 import urllib2
@@ -7,8 +8,7 @@ import pytz
 from base64 import b64encode
 from datetime import datetime, timedelta
 
-from django.utils.text import truncate_html_words
-from django.utils.hashcompat import md5_constructor
+from django.utils.text import Truncator
 
 from djangofeeds import conf
 from djangofeeds.optimization import PostContentOptimizer
@@ -27,7 +27,7 @@ def format_date(t):
 
 def md5sum(text):
     """Return the md5sum of a text string."""
-    return md5_constructor(text).hexdigest()
+    return hashlib.md5(text).hexdigest()
 
 
 def safe_encode(value):
@@ -171,7 +171,8 @@ def find_post_content(feed_obj, entry):
             img = ""
         content = img + content
     try:
-        content = truncate_html_words(content, conf.DEFAULT_ENTRY_WORD_LIMIT)
+        truncator = Truncator(text=content)
+        content =truncator.words(num=conf.DEFAULT_ENTRY_WORD_LIMIT, html=True)
     except UnicodeDecodeError:
         content = ""
 
